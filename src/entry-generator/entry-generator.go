@@ -52,7 +52,7 @@ func randomValue() string {
 	for i := range value {
 		value[i] = segments[rnd.Intn(SEG_COUNT)]
 	}
-	return strings.Join(value, "/")
+	return "- - - -/- - - - " + strings.Join(value, "/")
 }
 
 func randomEntry() string {
