@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -68,6 +69,8 @@ func usage() {
 
 func main() {
 
+	runtime.GOMAXPROCS(runtime.NumCPU())
+
 	flag.Usage = usage
 	flag.Parse()
 
@@ -83,8 +86,7 @@ func main() {
 		fmt.Println("Number of entries is wrong:", err)
 	}
 	for i := 0; i < cnt; i++ {
-		redis := []string{"LPUSH buff \"", randomEntry(), "\""}
-		fmt.Println(strings.Join(redis, ""))
+		fmt.Println("LPUSH buff \"", randomEntry(), "\"")
 		// speed capping 10K per second
 		// time.Sleep(1 * time.Microsecond)
 	}
