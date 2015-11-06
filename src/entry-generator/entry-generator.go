@@ -83,9 +83,10 @@ func main() {
 		fmt.Println("Number of entries is wrong:", err)
 	}
 	for i := 0; i < cnt; i++ {
-		fmt.Println(randomEntry())
+		redis := []string{"LPUSH buff \"", randomEntry(), "\""}
+		fmt.Println(strings.Join(redis, ""))
 		// speed capping 10K per second
-		time.Sleep(1 * time.Microsecond)
+		// time.Sleep(1 * time.Microsecond)
 	}
 
 }
