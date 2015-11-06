@@ -86,7 +86,7 @@ func main() {
 		fmt.Println("Number of entries is wrong:", err)
 	}
 	for i := 0; i < cnt; i++ {
-		fmt.Println("LPUSH buff \"", randomEntry(), "\"")
+		fmt.Print("LPUSH buff \"", randomEntry(), "\"\r\n")
 		// speed capping 10K per second
 		// time.Sleep(1 * time.Microsecond)
 	}
