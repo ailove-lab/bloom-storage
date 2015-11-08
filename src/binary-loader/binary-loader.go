@@ -9,7 +9,9 @@ import (
 	"time"
 	"sync"
 	"bytes"
+	"net/http"
 )
+import _ "net/http/pprof"
 
 
 var index = map[string][]byte{}
@@ -88,6 +90,11 @@ func loader() {
 }
 
 func main() {
+	
+	go func() {
+		fmt.Println(http.ListenAndServe("localhost:6060", nil))
+    }()
+
 	for i := 0; i < 100; i++ {
 		go loader()
 	}
