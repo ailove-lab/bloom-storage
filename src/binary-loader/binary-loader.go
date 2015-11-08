@@ -7,7 +7,46 @@ import (
 	"os"
 	"strings"
 	"time"
+	"sync"
+	"bytes"
 )
+
+
+var index = map[string][]byte{}
+var index_mutex = sync.RWMutex{}
+var index_code uint32 = 0
+
+func getCode(seg string) []byte {
+	
+	// read lock
+	index_mutex.RLock()
+	code := index[seg]
+	index_mutex.RUnlock()
+	
+	if len(code) == 0 {
+		//write lock
+		index_mutex.Lock()
+		// check if another write lock already change this index
+		code = index[seg]
+		// if it still empty generate new
+		if len(code) == 0 {
+			code =[]byte{byte((index_code>>8) & 0xFF), byte(index_code & 0xFF)}
+			index[seg] = code
+			index_code += 1
+		}
+		index_mutex.Unlock()
+	}
+	return code
+}
+
+func encode(value string) []byte {
+	fmt.Println(value)
+	var value_bin bytes.Buffer
+	for _, s := range strings.Split(value, "/") {
+		value_bin.Write(getCode(s))
+	}
+	return value_bin.Bytes()
+}
 
 func loader() {
 
@@ -31,7 +70,7 @@ func loader() {
 		entry := list[1]
 		key_val := strings.Split(entry, "\t")
 
-		key, err := base64.RawURLEncoding.DecodeString(key_val[0])
+		key_bin, err := base64.RawURLEncoding.DecodeString(key_val[0])
 		if err != nil {
 			fmt.Println("Can't decode key", err, key_val)
 			continue
@@ -40,23 +79,18 @@ func loader() {
 		values := strings.Split(key_val[1], " ")
 		value := values[len(values)-1]
 
-		segments := strings.Replace(value, "/", " ", -1)
-		res = rdb.Cmd("HMGET", "segments", segments)
+		value_bin := encode(value)
+		fmt.Println(key_bin, value_bin)
+
+		res = rdb.Cmd("HMSET", "cache", key_bin, value_bin)
 		if res.Err != nil {
-			fmt.Println("Get segments", res.Err)
-			continue
+			fmt.Println(res.Err)
 		}
-		list, err = res.List()
-		fmt.Println("Segment codes", list)
-
-		fmt.Println(key, segments)
-		rdb.Cmd("HSET", "cache", key, segments)
 	}
-
 }
 
 func main() {
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 100; i++ {
 		go loader()
 	}
 	for {
