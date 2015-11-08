@@ -96,7 +96,7 @@ func loader() {
 		// if res.Err != nil {
 		// 	fmt.Println(res.Err)
 		// }
-
+		fmt.Println(key_val[0], value_bin)
 		cache[key_val[0]] = value_bin
 	}
 }
