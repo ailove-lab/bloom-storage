@@ -40,7 +40,6 @@ func getCode(seg string) []byte {
 }
 
 func encode(value string) []byte {
-	fmt.Println(value)
 	var value_bin bytes.Buffer
 	for _, s := range strings.Split(value, "/") {
 		value_bin.Write(getCode(s))
@@ -80,7 +79,6 @@ func loader() {
 		value := values[len(values)-1]
 
 		value_bin := encode(value)
-		fmt.Println(key_bin, value_bin)
 
 		res = rdb.Cmd("HMSET", "cache", key_bin, value_bin)
 		if res.Err != nil {
