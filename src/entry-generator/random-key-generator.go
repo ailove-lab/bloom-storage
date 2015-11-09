@@ -1,33 +1,20 @@
 package main
 
 import (
-	"bytes"
-	"encoding/binary"
 	"flag"
 	"fmt"
 	"math/rand"
-	"runtime"
+	// "runtime"
 	"strconv"
 	"time"
 )
 
 var rnd = rand.New(rand.NewSource(time.Now().UnixNano()))
 
-func randomKey() []byte{
-	buf := new(bytes.Buffer)
-	for i := 0; i <= 3; i++ {
-		err := binary.Write(buf, binary.LittleEndian, rnd.Uint32())
-		if err != nil {
-			fmt.Println("binary.Write failed:", err)
-		}
-	}
-	return buf.Bytes()
-}
-
 
 func main() {
 
-	runtime.GOMAXPROCS(runtime.NumCPU())
+	// runtime.GOMAXPROCS(runtime.NumCPU())
 
 	flag.Parse()
 	args := flag.Args()
@@ -39,7 +26,7 @@ func main() {
 	}
 
 	for i := 0; i < cnt; i++ {
-		fmt.Println(randomKey())
+		fmt.Printf("%08X%08X%08X%08X\n",rnd.Uint32(),rnd.Uint32(),rnd.Uint32(),rnd.Uint32())
 	}
 
 }
