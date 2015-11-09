@@ -16,7 +16,7 @@ import _ "net/http/pprof"
 
 var index = map[string][]byte{}
 var cache = map[string][]byte{}
-
+var cache_mutex = sync.Mutex{}
 var index_mutex = sync.RWMutex{}
 var index_code uint32 = 0
 
@@ -96,8 +96,11 @@ func loader() {
 		// if res.Err != nil {
 		// 	fmt.Println(res.Err)
 		// }
+
 		fmt.Println(key_val[0], value_bin)
+		cache_mutex.Lock()
 		cache[key_val[0]] = value_bin
+		cache_mutex.Unlock()
 	}
 }
 
