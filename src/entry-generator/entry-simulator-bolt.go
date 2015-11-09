@@ -17,7 +17,7 @@ func main() {
     }
     defer db.Close()
 
-	file, err := os.Open("../../data/data-sample")
+	file, err := os.Open("../../data/data-sample-1G")
 	if err != nil {
 		log.Fatal(err)
 	}
