@@ -30,9 +30,10 @@ func main() {
 	var wg sync.WaitGroup
 	wg.Add(24)
 	for j :=0; j<24; j++ {
+		fmt.Println(j)
 		go func(){	
 			for i := 0; i < cnt/24; i++ {
-				fmt.Printf("%08X%08X%08X%08X\n",rnd.Uint32(),rnd.Uint32(),rnd.Uint32(),rnd.Uint32())
+				fmt.Printf("%d: %08X%08X%08X%08X\n",i, rnd.Uint32(),rnd.Uint32(),rnd.Uint32(),rnd.Uint32())
 			}
 			wg.Done()
 		}()
