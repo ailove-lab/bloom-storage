@@ -1,0 +1,5 @@
+*.d
+*.o
+binary-loader
+.ninja_deps
+.ninja_log

@@ -1,0 +1,19 @@
+cc = clang
+cflags = -Wall -Werror
+lib = ../../lib
+
+rule cc
+    depfile = $out.d
+    command = $cc -MMD -MF $out.d $cflags -o $out -c $in
+
+rule ln
+    command = $cc $cflags -o $out $in
+
+build bstrlib.o: cc $lib/bstrlib/bstrlib.c
+
+build binary-loader.o: cc binary-loader.c
+    cflags = $cflags -I../../lib/bstrlib
+
+build binary-loader: ln bstrlib.o binary-loader.o
+
+default binary-loader
