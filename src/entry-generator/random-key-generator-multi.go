@@ -55,6 +55,6 @@ func main() {
 	// }()
 	wg.Wait()
 
-	close(out)
+	// close(out)
 	// <-done
 }
