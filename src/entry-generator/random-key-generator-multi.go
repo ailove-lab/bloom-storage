@@ -28,33 +28,33 @@ func main() {
 	}
 	var wg sync.WaitGroup
 	
-	// out := make(chan string, 10000)
+	out := make(chan string, 10000)
 	for j :=0; j<24; j++ {
 		wg.Add(1)
 		go func(){	
 			var rnd = rand.New(rand.NewSource(time.Now().UnixNano()))
 			defer wg.Done()
 			for i := 0; i < cnt/24; i++ {
-				// out<-fmt.Sprintf("%08X%08X%08X%08X",rnd.Uint32(),rnd.Uint32(),rnd.Uint32(),rnd.Uint32())
-				fmt.Printf("%08X%08X%08X%08X\n",rnd.Uint32(),rnd.Uint32(),rnd.Uint32(),rnd.Uint32())
+				out<-fmt.Sprintf("%08X%08X%08X%08X",rnd.Uint32(),rnd.Uint32(),rnd.Uint32(),rnd.Uint32())
+				// fmt.Printf("%08X%08X%08X%08X\n",rnd.Uint32(),rnd.Uint32(),rnd.Uint32(),rnd.Uint32())
 			}
 		}()
 	}
 	
-	// done := make(chan bool)
-	// go func(){
-	// 	for {
-	// 		str, more := <-out
-	// 		if more {
-	// 			fmt.Println(str)
-	// 		} else {
-	// 			done <-true
-	// 			return
-	// 		}
-	// 	}
-	// }()
+	done := make(chan bool)
+	go func(){
+		for {
+			str, more := <-out
+			if more {
+				fmt.Println(str)
+			} else {
+				done <-true
+				return
+			}
+		}
+	}()
 	wg.Wait()
 
-	// close(out)
-	// <-done
+	close(out)
+	<-done
 }
