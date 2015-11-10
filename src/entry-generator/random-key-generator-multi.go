@@ -10,7 +10,6 @@ import (
 	"sync"
 )
 
-var rnd = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 
 func main() {
@@ -28,28 +27,33 @@ func main() {
 		return
 	}
 	var wg sync.WaitGroup
-	wg.Add(24)
+	
 	out := make(chan string, 10000)
 	for j :=0; j<24; j++ {
+		wg.Add(1)
 		go func(){	
+			var rnd = rand.New(rand.NewSource(time.Now().UnixNano()))
+			defer wg.Done()
 			for i := 0; i < cnt/24; i++ {
 				out<-fmt.Sprintf("%08X%08X%08X%08X",rnd.Uint32(),rnd.Uint32(),rnd.Uint32(),rnd.Uint32())
 			}
-			wg.Done()
 		}()
 	}
+	
+	done := make(chan bool)
 	go func(){
 		for {
 			str, more := <-out
 			if more {
 				fmt.Println(str)
 			} else {
+				done <-true
 				return
 			}
 		}
 	}()
 	wg.Wait()
-	close(out)
-	time.Sleep(1*time.Second)
 
+	close(out)
+	<-done
 }
