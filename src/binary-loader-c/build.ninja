@@ -10,10 +10,13 @@ rule ln
     command = $cc $cflags -o $out $in
 
 build bstrlib.o: cc $lib/bstrlib/bstrlib.c
+build hash.o: cc hash.c
 
 build binary-loader.o: cc binary-loader.c
-    cflags = $cflags -I../../lib/bstrlib
 
-build binary-loader: ln bstrlib.o binary-loader.o
+#build binary-loader: ln bstrlib.o binary-loader.o
+build binary-loader: ln binary-loader.o hash.o
+
+#build test-khash: cc test-khash.c
 
 default binary-loader
