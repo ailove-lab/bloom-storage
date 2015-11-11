@@ -1,6 +1,9 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/time.h>
 
 #include "hash.h"
 
@@ -14,7 +17,8 @@ int main() {
     int e = -1;
 
     hash_t *index = hash_new();
-
+    struct timeval stop, start;
+    gettimeofday(&start, NULL);
     while(getline(&line, &size, stdin) != -1) {
    
         // bstring bline = bfromcstr(line);
@@ -42,13 +46,23 @@ int main() {
         // printf("key: \"%s\" val: \"%s\"\n", key, val);
     }
     free(line);
+    printf("Duration %.2f sec\n", (double)(stop.tv_usec - start.tv_usec)*1e-6);
 
-    printf("Hash values: %d\n", hash_size(index));
+    // fprintf(stderr,"Duration: %.2f\n", (double)(time(NULL) - start));
+
+    fprintf(stderr, "Hash values: %d\n", hash_size(index));
+    fprintf(stderr, "hashed, wait 5 sec\n");
+    sleep(5);
+
+    fprintf(stderr, "Clear\n");
     hash_each(index, {
-      printf("%s: %s\n", key, (char *) val);
+      // printf("%s: %s\n", key, (char *) val);
       free((char *)key);
       free((char *)val);
     });
+    hash_free(index);
+    fprintf(stderr, "Cleared, wait 5 sec\n");
+    sleep(5);
 
     // const char *key; 
     // void *val; 
@@ -59,7 +73,6 @@ int main() {
     //   val = kh_value(index, k); 
     // } 
 
-    hash_free(index);
 
     return 0;
 }
