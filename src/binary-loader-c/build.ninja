@@ -1,21 +1,23 @@
 cc = clang
-cflags = -Wall -Werror
+#cflags = -Wall -Werror
+#dep = -MMD -MF $out.d
 lib = ../../lib
 
 rule cc
     depfile = $out.d
-    command = $cc -MMD -MF $out.d $cflags -o $out -c $in
+    command = $cc $dep $cflags -o $out $in
 
 rule ln
     command = $cc $cflags -o $out $in
 
 build bstrlib.o: cc $lib/bstrlib/bstrlib.c
 build hash.o: cc hash.c
+build base64.o: cc base64.c
 
 build binary-loader.o: cc binary-loader.c
 
 #build binary-loader: ln bstrlib.o binary-loader.o
-build binary-loader: ln binary-loader.o hash.o
+build binary-loader: cc base64.c hash.c binary-loader.c
 
 #build test-khash: cc test-khash.c
 
