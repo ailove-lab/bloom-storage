@@ -20,5 +20,6 @@ build binary-loader.o: cc binary-loader.c
 build binary-loader: cc base64.c hash.c binary-loader.c
 
 #build test-khash: cc test-khash.c
+build test-khash: cc test-khash.c
 
 default binary-loader
