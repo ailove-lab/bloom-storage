@@ -114,11 +114,11 @@ void decodeKey(char *key) {
     int dl = base64_decode(d, sizeof(d), key, kl);
     // printf("%s [%zu->%zd]: ", key, kl, dl);
     // printf("Returned data of length %zd @%p ", dl, &d);
-    printf("key: ");
-    for(int i=0; i<dl; ++i) {
-        printf("%02X", (unsigned char) d[i]);
-    }
-    printf("\n");
+    // printf("key: ");
+    // for(int i=0; i<dl; ++i) {
+    //     printf("%02X", (unsigned char) d[i]);
+    // }
+    // printf("\n");
     // base64_decode mallocs mem for result
     // free(d);
 }
@@ -137,17 +137,17 @@ void decodeVal(char *val) {
 
     for(int i=0; i<seg_count; i++) {
         int seg = atoi(segs[i]);
-        printf("seg: %08X ", seg);
         int ret=-1;
+        //printf("seg: %08X ", seg);
         
         unsigned short id = segIndexation(seg, &ret);
-        printf("ind: %04X (%d) ", id, ret);
+        //printf("ind: %04X (%d) ", id, ret);
 
         int cnt = segCount(id, &ret);
-        printf("cnt: %d (%d)\n", cnt, ret);
+        //printf("cnt: %d (%d)\n", cnt, ret);
     }
 
-    printf("\n");
+    //printf("\n");
 }
 
 
@@ -212,7 +212,7 @@ unsigned short segCount(int seg, int *ret) {
 void printSegCounter() {
     for (khint_t k = kh_begin(seg_counter); k != kh_end(seg_counter); ++k)  // traverse
         if (kh_exist(seg_counter, k))                             // test if a bucket contains data
-            printf("%04X %*d%s", kh_key(seg_counter, k), 3, kh_value(seg_counter, k), !(k%16) ? "\n": " ");
+            printf("%04X %*d |%s", kh_key(seg_counter, k), 6, kh_value(seg_counter, k), !(k%16) ? "\n": " ");
 }
 void clearSegCounter() {
     // clear memory
