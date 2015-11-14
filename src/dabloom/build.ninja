@@ -1,0 +1,15 @@
+cc = clang
+#cflags = -Wall -Werror
+#dep = -MMD -MF $out.d
+lib = ../../lib
+
+rule cc
+    depfile = $out.d
+    command = $cc $dep $cflags -o $out $in -lm
+
+rule ln
+    command = $cc $cflags -o $out $in
+
+build test-dablooms: cc test_dablooms.c dablooms.c murmur.c 
+
+default test-dablooms
