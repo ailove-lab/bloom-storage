@@ -69,14 +69,15 @@ int main(int argc, char *argv[])
 
     // blume_close(&bf);
 
-
-    err = blume_create(&bf, 1024 * 1024 * 1024, 0.01, "./scale.bf");
-
+    srand(0);
     i = 0;
     done = 0;
+    err = blume_create(&bf, 1024 * 1024 * 1024, 0.01, "./scale.bf");
     while(!done) {
         i += 1;
-        err = blume_add(bf, &i, sizeof(i));
+        char c[32];
+        sprintf(c, "%08X%08X", rand(),rand());
+        err = blume_add(bf, c, 16);
         if (err != BLUME_ERROR_SUCCESS) {
             printErr(err);
             fprintf(stderr, "Failed at %lu entries.\n", i);
@@ -84,6 +85,7 @@ int main(int argc, char *argv[])
         }
     }
     if(1) return 0;
+
     int s = i;
 
     uint64_t count_fps = 0;
