@@ -11,5 +11,6 @@ rule ln
     command = $cc $cflags -o $out $in
 
 build test-dablooms: cc test_dablooms.c dablooms.c murmur.c 
+build test-write: cc test_write.c dablooms.c murmur.c 
 
-default test-dablooms
+default test-write
