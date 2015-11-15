@@ -7,7 +7,7 @@
 
 #include "dablooms.h"
 
-#define CAPACITY 2000000
+#define CAPACITY 20000000
 #define ERROR_RATE .05
 
 enum {
