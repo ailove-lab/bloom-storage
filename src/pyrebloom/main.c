@@ -32,7 +32,7 @@ int main(int argc, char ** argv) {
     pyrebloomctxt ctxt;
     uint32_t i;
     time_t start, end;
-    uint32_t count = 1000000;
+    uint32_t count = 10000000;
 
     init_pyrebloom(&ctxt, "bloom", count, 0.01, "localhost", 6379, "", 0);
     int L=0;
@@ -47,14 +47,17 @@ int main(int argc, char ** argv) {
         L += strlen(c);
         add(&ctxt, c, strlen(c));
     }
+    add_complete(&ctxt, count);
     time(&end);
+    printf("ADD %f\n", difftime(end,start));
+    
     // printf("\n");
     // printf("----------------------------\n");
     // printf("size: %d\n", L);
     // printf("----------------------------\n");
 
     // srand(0);
-    add_complete(&ctxt, count);
+    time(&start);
     for (i = 0; i < count; ++i) {
         int r = rand();
         // rand();
@@ -69,6 +72,9 @@ int main(int argc, char ** argv) {
         int res = check_next(&ctxt);
         if(res) cnt++; 
     }
+    time(&end);
+    printf("CHECK %f\n", difftime(end,start));
+
     printf("count: %d false positive:%d prob: %f %%\n", count, cnt, 100.0/count*cnt);
     delete(&ctxt);
     free_pyrebloom(&ctxt);
