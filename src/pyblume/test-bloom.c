@@ -84,7 +84,6 @@ int main(int argc, char *argv[])
             done = 1;
         }
     }
-    if(1) return 0;
 
     int s = i;
 
@@ -94,7 +93,9 @@ int main(int argc, char *argv[])
 
     for(i = s; i < s*2; i++) {
         count_total += 1;
-        int hit = blume_check(bf, &i, sizeof(i));
+        char c[32];
+        sprintf(c, "%08X%08X", rand(),rand());
+        int hit = blume_check(bf, c, 16);
         if(hit) count_fps += 1;
     }
 
