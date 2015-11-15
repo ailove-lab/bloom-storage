@@ -4,7 +4,7 @@
 
 #include "blume.h"
 
-#define N (1024 * 1024 * 10)
+#define N (1024 * 1024 * 1024)
 
 void printErr(blume_error err);
 
@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
     // blume_close(&bf);
 
 
-    err = blume_create(&bf, 1024 * 1024 * 10, 0.01, "./scale.bf");
+    err = blume_create(&bf, 1024 * 1024 * 1024, 0.01, "./scale.bf");
 
     i = 0;
     done = 0;
@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
             done = 1;
         }
     }
-
+    if(1) return 0;
     int s = i;
 
     uint64_t count_fps = 0;

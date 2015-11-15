@@ -32,7 +32,7 @@ int main(int argc, char ** argv) {
     pyrebloomctxt ctxt;
     uint32_t i;
     time_t start, end;
-    uint32_t count = 10000000;
+    uint32_t count = 1000000;
 
     init_pyrebloom(&ctxt, "bloom", count, 0.01, "localhost", 6379, "", 0);
     int L=0;
@@ -76,7 +76,7 @@ int main(int argc, char ** argv) {
     printf("CHECK %f\n", difftime(end,start));
 
     printf("count: %d false positive:%d prob: %f %%\n", count, cnt, 100.0/count*cnt);
-    delete(&ctxt);
+    //delete(&ctxt);
     free_pyrebloom(&ctxt);
 
     // time(&start);
