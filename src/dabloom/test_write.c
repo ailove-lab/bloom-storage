@@ -106,27 +106,31 @@ int test_scaling_accuracy(const char *bloom_file, const char *words_file) {
     }
     
     for (i = 0; fgets(word, sizeof(word), fp); i++) {
-        chomp_line(word);
-        scaling_bloom_add(bloom, word, strlen(word), i);
+        if (i % 2 == 0) {
+            chomp_line(word);
+            scaling_bloom_add(bloom, word, strlen(word), i);
+        }
     }
     
-    // fseek(fp, 0, SEEK_SET);
-    // for (i = 0; fgets(word, sizeof(word), fp); i++) {
-    //     if (i % 2 == 1) {
-    //         chomp_line(word);
-    //         bloom_score(scaling_bloom_check(bloom, word, strlen(word)), 0, &results, word);
-    //     }
-    // }
+    fseek(fp, 0, SEEK_SET);
+    for (i = 0; fgets(word, sizeof(word), fp); i++) {
+        if (i % 2 == 1) {
+            chomp_line(word);
+            bloom_score(scaling_bloom_check(bloom, word, strlen(word)), 0, &results, word);
+        }
+    }
     
     fclose(fp);
     
     printf("Elements added:   %6d" "\n"
+           "Elements checked: %6d" "\n"
            "Total size: %d KiB"  "\n\n",
-           i, (int) bloom->num_bytes / 1024);
+           (i + 1) / 2, i / 2,
+           (int) bloom->num_bytes / 1024);
            
     free_scaling_bloom(bloom);
     
-    return TEST_PASS;
+    return print_results(&results);
 }
 
 int main(int argc, char *argv[])
