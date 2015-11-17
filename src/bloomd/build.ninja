@@ -1,0 +1,7 @@
+rule cc
+    command = clang -o $out $in -lmill
+
+build pack: cc pack.c
+
+default pack
+
