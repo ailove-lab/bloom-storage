@@ -1,7 +1,7 @@
 rule cc
-    command = clang -o $out $in -lmill
+    command = clang -o $out $in -lmill -pthread
 
-build pack: cc pack.c
+build pack: cc pack.c kthread.c
 
 default pack
 

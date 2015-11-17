@@ -13,6 +13,8 @@ typedef struct {
     unsigned long length;
 } block;
 
+int nthr;
+
 void loadFile(char *filename, block *b) {
 
     FILE *infile;
@@ -39,10 +41,8 @@ static int usage(){ printf("usage: pack file\n"); return 1;}
 // get part n
 // search first \n for start
 // search last  \n for length
-//                          
-// #######n #######n #######n
-//                           ^
-//                           E
+// WARNING p must be less than number ofstrings x3!
+
 void getSubBlock(block *blk, 
                  block *sub, 
                  unsigned int n, 
@@ -56,41 +56,47 @@ void getSubBlock(block *blk,
     char *e = s + l;
 
     if (n>0)
-        while ( s < E && *s != '\n') s++;
+        while ( s < E && s[-1] != '\n') s++;
     
     if (n<p-1)
-        while ( e < E && *e != '\n') e++;
+        while ( e < E && e[0] != '\n') e++;
 
     if (s == e) return;
-    printf("%X %X\n", s, e);
     sub->start  = s;
-    sub->length = e-s;
+    sub->length = (n<p-1) ? e-s : E-s;
 
 }
 
-void parser(char* buf, unsigned long size) {
-
+static void parser(void *blk, long i, int tid) {
+    printf("[%02d]: %06ld\n", tid, i);
+    sleep(1);
 }
+// n_threads - number of threads
+// function (data, call number, thread id)
+// data
+// number of calls
+void kt_for(int n_threads, void (*func)(void*, long, int), void *data, long n);
 
 int main(int argc, char *argv[]) {
 
-    if(argc == 1) return usage();
+    if(argc < 2) return usage();
 
+    nthr = sysconf(_SC_NPROCESSORS_ONLN);
+
+    printf("Processors: %d\n", nthr);
     block b = {NULL, 0};
 
     loadFile(argv[1], &b);
-    if(b.start == NULL) return usage();
+    assert(b.start != NULL);
     
-    block s = {NULL, 0};
-    printf("blk: %X [%lu]\n", b.start, b.length);
-    getSubBlock(&b, &s, 1, 10);
-    printf("sub: %X [%lu]\n", s.start, s.length);
-    assert(s.start != NULL);
-    printf("%.*s\n", (int)s.length, s.start);
+    // block s = {NULL, 0};
+    // getSubBlock(&b, &s, i, bc);
+    kt_for(nthr, parser, &b, nthr*10);
 
     free(b.start);
 
     return 0;
+
     // char buf[BUF_SIZE];
 
     // ipaddr addr = ipremote("localhost", 8673, 0, -1);
