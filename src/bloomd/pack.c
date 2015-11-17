@@ -6,7 +6,6 @@
 #include <string.h>
 #include <assert.h>
 
-#include <libmill.h>
 
 typedef struct {
     char *start;
@@ -27,12 +26,14 @@ void loadFile(char *filename, block *b) {
      
     fseek(infile, 0L, SEEK_SET);    
      
-    b->start = (char*)calloc(b->length, sizeof(char)); 
+    b->start = (char*)calloc(b->length+2, sizeof(char)); 
     if(b->start == NULL) return;
      
     fread(b->start, sizeof(char), b->length, infile);
     fclose(infile);
-
+    b->start[b->length  ] = '\n';
+    b->start[b->length+1] = '\0';
+    b->length += 2;
 }
 
 static int usage(){ printf("usage: pack file\n"); return 1;}
@@ -41,7 +42,7 @@ static int usage(){ printf("usage: pack file\n"); return 1;}
 // get part n
 // search first \n for start
 // search last  \n for length
-// WARNING p must be less than number ofstrings x3!
+// WARNING p must be less than number of strings x3!
 
 void getSubBlock(block *blk, 
                  block *sub, 
@@ -59,16 +60,38 @@ void getSubBlock(block *blk,
         while ( s < E && s[-1] != '\n') s++;
     
     if (n<p-1)
-        while ( e < E && e[0] != '\n') e++;
+        while ( e < E && e[-1] != '\n') e++;
 
     if (s == e) return;
     sub->start  = s;
     sub->length = (n<p-1) ? e-s : E-s;
 
 }
-
+// threaded function
 static void parser(void *blk, long i, int tid) {
-    printf("[%02d]: %06ld\n", tid, i);
+    block *b = (block*) blk;
+    block s = {NULL, 0};
+    getSubBlock(b, &s, i, nthr);
+    if(s.start == NULL) return;
+
+    // key \t flags    segments \n
+    // key \0 flags \0 segments \0
+    
+    char *key, *seg, *tab, *end, *E;
+    E = s.start + s.length;
+    key = s.start;
+    do {
+        tab = strchr(key, '\t'); // find tab
+        end = strchr(tab, '\n');     // find end
+        *end = 0;                    // split entry
+        *tab = 0;                    // split key/data
+        seg = strrchr(tab+1, ' ');   // find segments
+        *seg = 0;                    // sukot data to flags/segments
+        seg++;
+        printf("%d %s %s\n", tid, s.start, seg);
+        key = end+1;
+    } while (*key!='\0' && key<E);
+
     sleep(1);
 }
 // n_threads - number of threads
@@ -91,7 +114,7 @@ int main(int argc, char *argv[]) {
     
     // block s = {NULL, 0};
     // getSubBlock(&b, &s, i, bc);
-    kt_for(nthr, parser, &b, nthr*10);
+    kt_for(nthr, parser, &b, nthr);
 
     free(b.start);
 
