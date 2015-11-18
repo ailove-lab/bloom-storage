@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <assert.h>
+#include <sys/time.h>
 
 #include "khash.h"
 
@@ -30,6 +31,22 @@ keys* keys_new() {
     k->crs = k->buf;
     k->length = 256;
     return k;
+}
+
+static struct timeval tm1;
+
+static inline void start()
+{
+    gettimeofday(&tm1, NULL);
+}
+
+static inline void stop()
+{
+    struct timeval tm2;
+    gettimeofday(&tm2, NULL);
+
+    unsigned long long t = 1000 * (tm2.tv_sec - tm1.tv_sec) + (tm2.tv_usec - tm1.tv_usec) / 1000;
+    fprintf(stderr, "%llu ms\n", t);
 }
 
 void keys_free(keys* k) {
@@ -202,8 +219,9 @@ int main(int argc, char *argv[]) {
     
     // block s = {NULL, 0};
     // getSubBlock(&b, &s, i, bc);
+    start();
     kt_for(nthr, parser, &b, nthr);
-
+    stop();
     free(b.start);
 
     return 0;
