@@ -185,7 +185,9 @@ static void parser(void *blk, long i, int tid) {
     // SEND HERE
     for (khiter_t ki=kh_begin(s2k); ki!=kh_end(s2k); ++ki) {
         if (kh_exist(s2k, ki)) {
-            printf("b %s %s\n", kh_key(s2k, ki), kh_value(s2k, ki)->buf);
+            char *key = (char*) kh_key(s2k, ki);
+            printf("create%s\n", key);
+            printf("b %s %s\n", key, kh_value(s2k, ki)->buf);
         }
 
     }
