@@ -1,5 +1,5 @@
 rule cc
-    command = clang -g -o $out $in -lmill -pthread
+    command = clang -g -o $out $in -pthread
 
 build pack: cc pack.c kthread.c
 
