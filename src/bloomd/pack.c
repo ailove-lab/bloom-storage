@@ -6,13 +6,52 @@
 #include <string.h>
 #include <assert.h>
 
+#include "khash.h"
 
 typedef struct {
     char *start;
     unsigned long length;
 } block;
 
+typedef struct {
+    char *buf;
+    char *crs;
+    unsigned int length;
+} keys;
+
 int nthr;
+
+
+keys* keys_new() {
+    keys* k = malloc(sizeof(keys));
+    if(k == NULL) return NULL;
+    k->buf = malloc(sizeof(char)*256);
+    if(k->buf == NULL) {free(k); return NULL;}
+    k->crs = k->buf;
+    k->length = 256;
+    return k;
+}
+
+void keys_free(keys* k) {
+    free(k->buf);
+    free(k);
+}
+
+void keys_add(keys *k, char *v) {
+    int l = strlen(v);
+    int s = k->crs - k->buf;
+    // printf("add %s %d %d\n", v, l, s);
+    if(s+l+2 > k->length) {
+        k->buf = realloc(k->buf, sizeof(char)*k->length*2);
+        k->crs = k->buf + s;
+        k->length *= 2;
+    }
+    strcpy(k->crs, v);
+    k->crs += l+1;
+    k->crs[-1] = ' ';
+    k->crs[ 0] = 0;
+
+}
 
 void loadFile(char *filename, block *b) {
 
@@ -38,7 +77,7 @@ void loadFile(char *filename, block *b) {
 
 static int usage(){ printf("usage: pack file\n"); return 1;}
 
-// split block on 'p' parts
+// split blocke on 'p' parts
 // get part n
 // search first \n for start
 // search last  \n for length
@@ -59,7 +98,7 @@ void getSubBlock(block *blk,
     if (n>0)
         while ( s < E && s[-1] != '\n') s++;
     
-    if (n<p-1)
+    // if (n<p-1)
         while ( e < E && e[-1] != '\n') e++;
 
     if (s == e) return;
@@ -67,33 +106,82 @@ void getSubBlock(block *blk,
     sub->length = (n<p-1) ? e-s : E-s;
 
 }
-// threaded function
-static void parser(void *blk, long i, int tid) {
-    block *b = (block*) blk;
-    block s = {NULL, 0};
-    getSubBlock(b, &s, i, nthr);
-    if(s.start == NULL) return;
 
-    // key \t flags    segments \n
-    // key \0 flags \0 segments \0
-    
+// threaded function
+KHASH_MAP_INIT_STR(hash, keys*)
+
+static void parser(void *blk, long i, int tid) {
+
+    block *b = (block*) blk;
+    block sub = {NULL, 0};
+    getSubBlock(b, &sub, i, nthr);
+    if(sub.start == NULL) return;
+
+    khash_t(hash) *s2k = kh_init(hash);
+
     char *key, *seg, *tab, *end, *E;
-    E = s.start + s.length;
-    key = s.start;
+    E = sub.start + sub.length;
+    key = sub.start;
+
+    // iterate throug lines
     do {
-        tab = strchr(key, '\t'); // find tab
-        end = strchr(tab, '\n');     // find end
+        end = strchr(key, '\n');     // find end
+        if (end == NULL) break;
         *end = 0;                    // split entry
+        
+        tab = strchr(key, '\t');     // find tab
+        if(tab == NULL) {
+            key = end+1;
+            continue;
+        } 
         *tab = 0;                    // split key/data
-        seg = strrchr(tab+1, ' ');   // find segments
-        *seg = 0;                    // sukot data to flags/segments
+        
+        seg  = strrchr(tab+1, ' ');   // find segments
+        *seg = 0;                     // sukot data to flags/segments
         seg++;
-        printf("%d %s %s\n", tid, s.start, seg);
+
+        // iterate through segments
+        char *s, *sv;
+        s = strtok_r(seg, "/",&sv);
+        while (s!=NULL) {
+            
+            int ret;
+            khiter_t ki;
+            keys *ks;
+            ki = kh_put(hash, s2k, seg, &ret);
+            
+            if(ret == 0) {
+                ks = kh_value(s2k, ki);
+            } else if(ret == 1) {
+                ks = keys_new();
+                kh_value(s2k, ki) = ks;
+            }
+            keys_add(ks, key);
+
+            // next token
+            s = strtok_r(NULL, "/",&sv);
+        }
+
         key = end+1;
     } while (*key!='\0' && key<E);
 
-    sleep(1);
+    // SEND HERE
+    for (khiter_t ki=kh_begin(s2k); ki!=kh_end(s2k); ++ki) {
+        if (kh_exist(s2k, ki)) {
+            printf("b %s %s\n", kh_key(s2k, ki), kh_value(s2k, ki)->buf);
+        }
+
+    }
+
+    // FREE
+    for (khiter_t ki=kh_begin(s2k); ki!=kh_end(s2k); ++ki) {
+        if (kh_exist(s2k, ki)) keys_free(kh_value(s2k, ki));
+    }
+    kh_destroy(hash, s2k);
+    
 }
+
+
 // n_threads - number of threads
 // function (data, call number, thread id)
 // data
@@ -106,7 +194,7 @@ int main(int argc, char *argv[]) {
 
     nthr = sysconf(_SC_NPROCESSORS_ONLN);
 
-    printf("Processors: %d\n", nthr);
+    fprintf(stderr, "Processors: %d\n", nthr);
     block b = {NULL, 0};
 
     loadFile(argv[1], &b);
@@ -119,23 +207,5 @@ int main(int argc, char *argv[]) {
     free(b.start);
 
     return 0;
-
-    // char buf[BUF_SIZE];
-
-    // ipaddr addr = ipremote("localhost", 8673, 0, -1);
-    // tcpsock s = tcpconnect(addr, -1);
-
-    // if (s==NULL) return -1;
-    
-    // size_t nbytes = tcpsend(s,"list\n", 5, -1);
-    // tcpflush(s,-1);
-    // int i = 0;
-
-    // do {
-    //     nbytes = tcprecvuntil(s, buf, BUF_SIZE, "\n", 1, -1);
-    //     printf("%d[%zu]: %.*s", i++, nbytes, (int)nbytes, buf);
-    // } while (strncmp(buf,"END\n", nbytes)!=0);
-
-    // tcpclose(s);
 
 }
