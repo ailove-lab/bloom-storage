@@ -7,7 +7,9 @@
 #include <unistd.h>
 
 #define BUFFER_SIZE (1 * 1024 * 1024)
-#define ITERATIONS (100 * 1024)
+#define ITERATIONS (10 * 1024)
+
+char* file_name = "../data/part-00001";
 
 double now()
 {
@@ -27,7 +29,7 @@ int main()
 
 #ifdef USE_FREAD
     FILE *fp;
-    fp = fopen("/dev/zero", "rb");
+    fp = fopen(file_name, "rb");
     for(i = 0; i < ITERATIONS; ++i)
     {
         fread(buffer, BUFFER_SIZE, 1, fp);
@@ -40,7 +42,7 @@ int main()
 
 #elif USE_MMAP
     unsigned char *mmdata;
-    int fd = open("/dev/zero", O_RDONLY);
+    int fd = open(file_name, O_RDONLY);
     for(i = 0; i < ITERATIONS; ++i)
     {
         mmdata = mmap(NULL, BUFFER_SIZE, PROT_READ, MAP_PRIVATE, fd, i * BUFFER_SIZE);
@@ -56,7 +58,7 @@ int main()
 
 #else
     int fd;
-    fd = open("/dev/zero", O_RDONLY);
+    fd = open(file_name, O_RDONLY);
     for(i = 0; i < ITERATIONS; ++i)
     {
         read(fd, buffer, BUFFER_SIZE);
