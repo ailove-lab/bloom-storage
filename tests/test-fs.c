@@ -7,7 +7,7 @@
 #include <unistd.h>
 
 #define BUFFER_SIZE (1 * 1024 * 1024)
-#define ITERATIONS (10 * 1024)
+#define ITERATIONS (100 * 1024)
 
 double now()
 {
@@ -37,6 +37,7 @@ int main()
         }
     }
     fclose(fp);
+
 #elif USE_MMAP
     unsigned char *mmdata;
     int fd = open("/dev/zero", O_RDONLY);
@@ -52,6 +53,7 @@ int main()
         munmap(mmdata, BUFFER_SIZE);
     }
     close(fd);
+
 #else
     int fd;
     fd = open("/dev/zero", O_RDONLY);
