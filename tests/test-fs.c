@@ -1,3 +1,7 @@
+// clang -Wall -O3 -o test-fs test-fs.c
+// clang -Wall -O3 -o test-fs test-fs.c -DUSE_FREAD
+// clang -Wall -O3 -o test-fs test-fs.c -DUSE_MMAP
+
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -8,6 +12,10 @@
 
 #define BUFFER_SIZE (1 * 1024 * 1024)
 #define ITERATIONS (10 * 1024)
+
+
+// http://unix.stackexchange.com/questions/87908/how-do-you-empty-the-buffers-and-cache-on-a-linux-system
+// http://stackoverflow.com/questions/3002122/fastest-file-reading-in-c
 
 char* file_name = "../data/part-00001";
 
